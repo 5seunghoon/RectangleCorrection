@@ -4,6 +4,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import com.tistory.deque.rectanglecorrection.util.SnackbarMessage
 import com.tistory.deque.rectanglecorrection.util.SnackbarMessageString
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 
 open class BaseViewModel : ViewModel() {
     // 일회성 이벤트를 만들어 내는 라이브 이벤트
@@ -15,17 +17,16 @@ open class BaseViewModel : ViewModel() {
      * RxJava 의 observing을 위한 부분.
      * addDisposable을 이용하여 추가하기만 하면 된다
      */
-    //private val compositeDisposable = CompositeDisposable()
-    /*
+    private val compositeDisposable = CompositeDisposable()
+
     fun addDisposable(disposable: Disposable) {
         compositeDisposable.add(disposable)
     }
-    */
 
     private fun endOfViewModel() {}
 
     override fun onCleared() {
-        //compositeDisposable.clear()
+        compositeDisposable.clear()
         endOfViewModel()
         super.onCleared()
     }
