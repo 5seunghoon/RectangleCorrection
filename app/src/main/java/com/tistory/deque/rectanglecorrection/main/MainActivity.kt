@@ -23,8 +23,6 @@ class MainActivity : BaseActivity<BaseViewModel>(), CameraBridgeViewBase.CvCamer
     override val viewModel: BaseViewModel
         get() = ViewModelProviders.of(this).get(MainViewModel::class.java)
 
-    private val OPENCV_TAG = "OPENCV_TAG"
-
     private var matInput: Mat? = null
     private var matResult: Mat? = null
 
