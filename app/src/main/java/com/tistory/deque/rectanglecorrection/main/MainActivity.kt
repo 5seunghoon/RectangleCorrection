@@ -51,7 +51,7 @@ class MainActivity : BaseActivity<BaseViewModel>(), CameraBridgeViewBase.CvCamer
         viewModel.addDisposable(
             TedRx2Permission.with(this)
                 .setRationaleTitle("사진 접근 권한")
-                .setRationaleMessage("사진을 찍기 위해선 권한이 필요합니다")
+                .setRationaleMessage("사진을 찍기 위해선 권한이 필요합니다.")
                 .setPermissions(Manifest.permission.CAMERA)
                 .request()
                 .subscribe({
