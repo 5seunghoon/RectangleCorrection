@@ -6,19 +6,12 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
+		android:background="@color/canvasBackgroundColor"
 		tools:context=".rect.RectCorrectionActivity">
 
-	<Button android:text="사진 선택"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_margin="24dp"
-	        android:layout_gravity="center"
-	        android:id="@+id/rect_button_select_picture"/>
-	<ImageView
-			android:layout_width="match_parent"
-			android:layout_height="410dp"
-			android:layout_margin="48dp"
-			android:scaleType="fitCenter"
-			app:srcCompat="@android:color/darker_gray"
-			android:id="@+id/rect_image_view"/>
+	<com.tistory.deque.rectanglecorrection.customview.RectCanvasView android:layout_width="match_parent"
+	                                                                 android:layout_height="match_parent"
+	                                                                 android:id="@+id/rect_canvas_custom_view"/>
+
+
 </LinearLayout>
