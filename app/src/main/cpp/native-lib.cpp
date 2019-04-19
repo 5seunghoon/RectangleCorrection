@@ -6,7 +6,7 @@ using namespace cv;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_tistory_deque_rectanglecorrection_main_MainActivity_convertRGBtoGray(JNIEnv *env,
+Java_com_tistory_deque_rectanglecorrection_camera_CameraActivity_convertRGBtoGray(JNIEnv *env,
                                                                             jobject instance,
                                                                             jlong matAddrInput,
                                                                             jlong matAddrResult) {
