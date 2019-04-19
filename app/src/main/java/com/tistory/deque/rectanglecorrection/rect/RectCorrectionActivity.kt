@@ -72,9 +72,9 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
             RequestCodeConstant.RectPictureSelectRequsetCode -> {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.let {
-                        EzLogger.d("uri : ${data.data}" )
-                        val imagePath = data.data?.getRealPath(this.contentResolver)
-                        EzLogger.d("path : ${imagePath}")
+                        EzLogger.d("uri : ${it.data}" )
+                        val imagePath = it.data?.getRealPath(this.contentResolver)
+                        EzLogger.d("path : $imagePath")
 
                         val imageInput = Mat()
                         val imageOutput = Mat()
@@ -86,7 +86,6 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
                             Utils.matToBitmap(imageOutput, outputBitmap)
                             rect_image_view.setImageBitmap(outputBitmap)
                         }
-
                     }
                 }
             }

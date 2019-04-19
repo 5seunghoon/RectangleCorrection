@@ -11,7 +11,11 @@ Like, CamScanner
 
 OpenCV Version : 4.1.0
 <br>
-Kotlin Version : 1.3.21
+Kotlin Version : 1.3.30
+
+-----------------------------------------------------------
+
+OpenCV CPP code 위치 : /app/src/main/cpp/native-lib.cpp
 
 -----------------------------------------------------------
 
