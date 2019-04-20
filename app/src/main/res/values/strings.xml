@@ -1,3 +1,4 @@
 <resources>
 	<string name="app_name">RectangleCorrection</string>
+	<string name="rect_correction_ok_name">OK</string>
 </resources>

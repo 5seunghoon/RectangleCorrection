@@ -2,6 +2,8 @@ package com.tistory.deque.rectanglecorrection.rect
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.SeekBar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -13,7 +15,13 @@ import com.tistory.deque.rectanglecorrection.util.EzLogger
 import com.tistory.deque.rectanglecorrection.util.getRealPath
 import kotlinx.android.synthetic.main.activity_rect_correction.*
 import org.opencv.android.Utils
+import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Point
+import org.opencv.core.Size
+import org.opencv.utils.Converters
+import org.opencv.imgproc.Imgproc
+
 
 class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
     companion object {
@@ -33,50 +41,85 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
     private external fun loadImage(imageFileName: String, img: Long)
     private external fun imageProcessing(inputImage: Long, outputImage: Long, lowThreshold: Int, highThreshold: Int)
 
-    private var lowThreshold = 0
-    private var highThreshold = 255
-
     private var originalImageMat: Mat = Mat()
     private var originalBaseImage: BaseImage? = null
+
     override fun initStartView() {
         getImageFromIntent(intent)
     }
 
     override fun initDataBinding() {
+        viewModel.clickRectCorrectionOkButtonEvent.observe(this, Observer {
+            perspectiveConvertImage()
+        })
     }
 
     override fun initAfterBinding() {
     }
 
-    private fun changeImage(){
-        EzLogger.d("high : $highThreshold low : $lowThreshold ")
-        originalBaseImage?.let {
-            val imageOutput = Mat()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.rect_correction_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
-            imageProcessing(originalImageMat.nativeObjAddr, imageOutput.nativeObjAddr, lowThreshold, highThreshold)
-            val outputBitmap = Bitmap.createBitmap(imageOutput.cols(), imageOutput.rows(), Bitmap.Config.ARGB_8888)
-            Utils.matToBitmap(imageOutput, outputBitmap)
-            rect_canvas_custom_view?.convertedImage = ConvertedImage(outputBitmap)
-            rect_canvas_custom_view?.invalidate()
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.rect_correction_ok -> {
+                viewModel.clickRectCorrectionOkButton()
+            }
         }
+        return false
+    }
+
+    private fun perspectiveConvertImage() {
+        val guideLine = rect_canvas_custom_view?.guideLine ?: return
+
+        val srcPoints = ArrayList<Point>()
+        originalBaseImage?.let {
+            srcPoints.run {
+                add(Point(0.0, 0.0))
+                add(Point(0.0, it.height.toDouble()))
+                add(Point(it.width.toDouble(), 0.0))
+                add(Point(it.width.toDouble(), it.height.toDouble()))
+            }
+        }
+
+        val dstPoints = ArrayList<Point>()
+        guideLine.let {
+            dstPoints.run {
+                add(Point(it.guideLeftTopPair.first, it.guideLeftTopPair.second))
+                add(Point(it.guideLeftBottomPair.first, it.guideLeftBottomPair.second))
+                add(Point(it.guideRightTopPair.first, it.guideRightTopPair.second))
+                add(Point(it.guideRightBottomPair.first, it.guideRightBottomPair.second))
+            }
+        }
+
+        val srcMat: Mat = Converters.vector_Point2f_to_Mat(srcPoints)
+        val dstMat: Mat = Converters.vector_Point2f_to_Mat(dstPoints)
+
+        val perspectiveTransformation = Imgproc.getPerspectiveTransform(srcMat, dstMat)
+        val inputMat: Mat = Mat(originalBaseImage?.width ?: return, originalBaseImage?.height ?: return, CvType.CV_8UC4)
+        val outputMat: Mat =
+            Mat(originalBaseImage?.width ?: return, originalBaseImage?.height ?: return, CvType.CV_8UC4)
+        Utils.bitmapToMat(originalBaseImage?.getBitmap(this) ?: return, inputMat)
+
+        Imgproc.warpPerspective(
+            inputMat,
+            outputMat,
+            perspectiveTransformation,
+            Size(originalBaseImage?.width?.toDouble() ?: return, originalBaseImage?.height?.toDouble() ?: return)
+        )
+
     }
 
     private fun getImageFromIntent(intent: Intent?) {
         intent?.data?.let { imageUri ->
             EzLogger.d("uri : $imageUri")
-            val imagePath = imageUri.getRealPath(this.contentResolver)
-            EzLogger.d("path : $imagePath")
 
             originalBaseImage = BaseImage(imageUri) //uri로부터 model 생성
             //originalImage의 mat 생성
-            Utils.bitmapToMat(originalBaseImage?.getBitmap(this) ?: return@let, originalImageMat)
+            //Utils.bitmapToMat(originalBaseImage?.getBitmap(this) ?: return@let, originalImageMat)
             rect_canvas_custom_view?.baseImage = originalBaseImage ?: return
-
-            //TODO : originalBaseImage를 이용해서 사각형(사다리꼴) OpenCV를 이용해서 감지. 그 후 해당 사다리꼴의 모서리를 list로 받기
-            //TODO : 연산 완료된 모서리 포지션들을 이용해서 캔버스에 사다리꼴 그리기
-            //TODO : (완료)버튼을 눌리면 해당 사다리꼴 모양으로 사진을 자르고 저장
-
-            //changeImage()
             rect_canvas_custom_view?.invalidate()
         }
 

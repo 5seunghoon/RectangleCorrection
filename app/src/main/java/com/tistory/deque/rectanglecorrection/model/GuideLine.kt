@@ -11,6 +11,8 @@ class GuideLine {
     var guideRightTopPair = Pair(0.0, 0.0)
     var guideRightBottomPair = Pair(0.0, 0.0)
 
+    val clickRadius = 50f
+
     var guideLineRect: Rect? = null
     var guideLineColor: Int = Color.RED
 
@@ -50,15 +52,23 @@ class GuideLine {
         }
     }
 
-    fun whatClicked() {
-
+    fun whatClicked(x: Int, y: Int): GuidePoint {
+        Pair(x, y).let {
+            return when {
+                guideLeftTopPair.isClicked(it) -> GuidePoint.LEFT_TOP
+                guideLeftBottomPair.isClicked(it) -> GuidePoint.LEFT_BOTTOM
+                guideRightTopPair.isClicked(it) -> GuidePoint.RIGHT_TOP
+                guideRightBottomPair.isClicked(it) -> GuidePoint.RIGHT_BOTTOM
+                else -> GuidePoint.NONE
+            }
+        }
     }
 
-    fun Pair<Double, Double>.isAllZero() = (first == 0.0 && second == 0.0)
+    private fun Pair<Double, Double>.isAllZero() = (first == 0.0 && second == 0.0)
 
-    fun Pair<Double, Double>.isClicked(clicked: Pair<Int, Int>): Boolean {
-        val radius = 25
-        return (clicked.first <= this.first + radius && clicked.first >= this.first - radius &&
-                clicked.second <= this.second + radius && clicked.second >= this.second - radius)
+    private fun Pair<Double, Double>.isClicked(clicked: Pair<Int, Int>): Boolean {
+        return (clicked.first <= this.first + clickRadius && clicked.first >= this.first - clickRadius &&
+                clicked.second <= this.second + clickRadius && clicked.second >= this.second - clickRadius)
     }
+
 }
