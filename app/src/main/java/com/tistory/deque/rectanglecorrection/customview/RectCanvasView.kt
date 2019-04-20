@@ -8,7 +8,9 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.tistory.deque.rectanglecorrection.R
 import com.tistory.deque.rectanglecorrection.model.BaseImage
+import com.tistory.deque.rectanglecorrection.model.ConvertedImage
 import com.tistory.deque.rectanglecorrection.util.EzLogger
+import com.tistory.deque.rectanglecorrection.util.getCanvasOnResizingBitmapElements
 
 class RectCanvasView : View {
     init {
@@ -23,6 +25,7 @@ class RectCanvasView : View {
 
     private var imageCanvas: Canvas? = null
     var baseImage: BaseImage? = null
+    var convertedImage: ConvertedImage? = null
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -30,16 +33,20 @@ class RectCanvasView : View {
 
         canvas?.let {
             setBackgroundColor(ContextCompat.getColor(context, R.color.canvasBackgroundColor))
-            drawBaseImage(it)
+            drawConvertedImage(it)
         }
     }
 
-    private fun drawBaseImage(canvas: Canvas) {
-        val elements = baseImage?.getResizedBitmapElements(this.width, this.height) ?: return
-        val bitmapRect = Rect(elements[0], elements[1], elements[0] + elements[2], elements[1] + elements[3])
-        EzLogger.d("draw base image, rect : $bitmapRect")
-        EzLogger.d("base image canvas on rate : ${baseImage?.canvasOnResizingRate}")
-        canvas.drawBitmap(baseImage?.getBitmap(this.context) ?: return, null, bitmapRect, null)
+    private fun drawConvertedImage(canvas: Canvas) {
+        val resizingElementsPair =
+            convertedImage?.bitmap?.getCanvasOnResizingBitmapElements(this.width, this.height) ?: return
+        convertedImage?.convertedBitmapOnCanvasElements = IntArray(4) { resizingElementsPair.first[it] }
+        convertedImage?.convertedBitmapResizingRate = resizingElementsPair.second
+        resizingElementsPair.first.let {
+            val bitmapRect = Rect(it[0], it[1], it[0] + it[2], it[1] + it[3])
+            EzLogger.d("draw converted bitmap, rect : $bitmapRect")
+            EzLogger.d("base converted bitmap canvas on rate : ${convertedImage?.convertedBitmapResizingRate}")
+            canvas.drawBitmap(convertedImage?.bitmap ?: return, null, bitmapRect, null)
+        }
     }
-
 }

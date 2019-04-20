@@ -21,13 +21,6 @@ data class BaseImage(var originalImageUri: Uri) {
     val height: Int
         get() = bitmap?.height ?: 0
 
-    var canvasOnWidth: Int? = null
-    var canvasOnHeight: Int? = null
-    var canvasOnWidthPos: Int? = null
-    var canvasOnHeightPos: Int? = null
-
-    var canvasOnResizingRate: Double? = null
-
     private var bitmap: Bitmap? = null
     fun getBitmap(context: Context): Bitmap? {
         return if (bitmap != null) bitmap
@@ -39,63 +32,6 @@ data class BaseImage(var originalImageUri: Uri) {
             bitmap = imageUriToBitmap(RectCorrectionActivity.bitmapMaxSize, this.originalImageUri, context, rotation)
             return bitmap
         }
-
-    }
-    /**
-     * 비트맵을 어느 좌표에 어떤 크기로 그릴지 결정
-     * @return bitmapPosWidth, bitmapPosHeight, bitmapWidth, bitmapHeight
-     */
-    fun getResizedBitmapElements(canvasWidth: Int, canvasHeight: Int): ArrayList<Int> {
-        val bitmapRate: Double = width / height.toDouble()
-        val canvasRate: Double = canvasWidth.toDouble() / canvasHeight.toDouble()
-
-        EzLogger.d("""
-            bitmapRate: $bitmapRate, canvasRate : $canvasRate,
-            bitmapWidth : $width, bitmapHeight : $height
-            canvasWidth: $canvasWidth, canvasHeight : $canvasHeight
-        """.trimIndent())
-
-        val elements = ArrayList<Int>()
-
-        EzLogger.d("getResizedBitmapElements canvas w, h : $canvasWidth, $canvasHeight")
-
-        if (bitmapRate >= canvasRate && width >= canvasWidth) { // w > h
-            EzLogger.d("getResizedBitmapElements case 1")
-
-            canvasOnWidthPos = 0
-            canvasOnHeightPos = (canvasHeight - (canvasWidth * (1 / bitmapRate)).toInt()) / 2
-            canvasOnWidth = canvasWidth
-            canvasOnHeight = (canvasWidth * (1 / bitmapRate)).toInt()
-
-            canvasOnResizingRate = width.toDouble() / canvasWidth.toDouble()
-
-        } else if (bitmapRate < canvasRate && height >= canvasHeight) { // w < h
-            EzLogger.d("getResizedBitmapElements case 2")
-
-            canvasOnWidthPos = (canvasWidth - (canvasHeight * bitmapRate).toInt()) / 2
-            canvasOnHeightPos = 0
-            canvasOnWidth = (canvasHeight * bitmapRate).toInt()
-            canvasOnHeight = canvasHeight
-
-            canvasOnResizingRate = height.toDouble() / canvasHeight.toDouble()
-
-        } else {
-            EzLogger.d("getResizedBitmapElements case 3")
-
-            canvasOnWidthPos = (canvasWidth - width) / 2
-            canvasOnHeightPos = (canvasHeight - height) / 2
-            canvasOnWidth = width
-            canvasOnHeight = height
-            canvasOnResizingRate = 1.0
-
-        }
-
-        elements.add(canvasOnWidthPos ?: 0)
-        elements.add(canvasOnHeightPos ?: 0)
-        elements.add(canvasOnWidth ?: 0)
-        elements.add(canvasOnHeight ?: 0)
-
-        return elements
     }
 
     private fun imageUriToBitmap(maxSize: Int, imageUri: Uri, context: Context, rotation: Int?): Bitmap? {
@@ -126,9 +62,11 @@ data class BaseImage(var originalImageUri: Uri) {
         } catch (e: FileNotFoundException) {
             EzLogger.d("URI -> Bitmap : URI File not found$imageUri")
             e.printStackTrace()
+            return null
         } catch (e: IOException) {
             EzLogger.d("URI -> Bitmap : IOException$imageUri")
             e.printStackTrace()
+            return null
         }
 
         if (rotation != null && resizedBitmap != null) {

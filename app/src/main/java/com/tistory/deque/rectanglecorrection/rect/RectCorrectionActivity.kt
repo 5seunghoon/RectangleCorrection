@@ -11,6 +11,7 @@ import com.tedpark.tedpermission.rx2.TedRx2Permission
 import com.tistory.deque.rectanglecorrection.R
 import com.tistory.deque.rectanglecorrection.base.BaseActivity
 import com.tistory.deque.rectanglecorrection.model.BaseImage
+import com.tistory.deque.rectanglecorrection.model.ConvertedImage
 import com.tistory.deque.rectanglecorrection.util.EzLogger
 import com.tistory.deque.rectanglecorrection.util.RequestCodeConstant
 import com.tistory.deque.rectanglecorrection.util.getRealPath
@@ -54,26 +55,28 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
             val imagePath = imageUri.getRealPath(this.contentResolver)
             EzLogger.d("path : $imagePath")
 
-            originalBaseImage = BaseImage(imageUri)
+            originalBaseImage = BaseImage(imageUri) //uri로부터 model 생성
+            originalBaseImage?.let { baseImage ->
+                rect_canvas_custom_view?.baseImage = originalBaseImage
 
-            rect_canvas_custom_view?.baseImage = originalBaseImage
-            rect_canvas_custom_view.invalidate()
+                //TODO : originalBaseImage를 이용해서 사각형(사다리꼴) OpenCV를 이용해서 감지. 그 후 해당 사다리꼴의 모서리를 list로 받기
+                //TODO : 연산 완료된 모서리 포지션들을 이용해서 캔버스에 사다리꼴 그리기
+                //TODO : (완료)버튼을 눌리면 해당 사다리꼴 모양으로 사진을 자르고 저장
 
-            //TODO : originalBaseImage를 이용해서 사각형(사다리꼴) OpenCV를 이용해서 감지. 그 후 해당 사다리꼴의 모서리를 list로 받기
-            //TODO : 연산 완료된 모서리 포지션들을 이용해서 캔버스에 사다리꼴 그리기
-            //TODO : (완료)버튼을 눌리면 해당 사다리꼴 모양으로 사진을 자르고 저장
+                val imageInput = Mat()
+                val imageOutput = Mat()
+                // originalBaseImage를 Mat로 변환
+                Utils.bitmapToMat(baseImage.getBitmap(this) ?: return, imageInput)
 
-            // 사진을 흑백으로 바꾸는 코드
-            val imageInput = Mat()
-            val imageOutput = Mat()
-
-            imagePath?.let {
-                loadImage(it, imageInput.nativeObjAddr)
-                imageProcessing(imageInput.nativeObjAddr, imageOutput.nativeObjAddr)
-                val outputBitmap = Bitmap.createBitmap(imageOutput.cols(), imageOutput.rows(), Bitmap.Config.ARGB_8888)
-                Utils.matToBitmap(imageOutput, outputBitmap)
+                imagePath?.let {
+                    //loadImage(it, imageInput.nativeObjAddr)
+                    imageProcessing(imageInput.nativeObjAddr, imageOutput.nativeObjAddr)
+                    val outputBitmap = Bitmap.createBitmap(imageOutput.cols(), imageOutput.rows(), Bitmap.Config.ARGB_8888)
+                    Utils.matToBitmap(imageOutput, outputBitmap)
+                    rect_canvas_custom_view?.convertedImage = ConvertedImage(outputBitmap)
+                    rect_canvas_custom_view?.invalidate()
+                }
             }
-
         }
 
         super.onNewIntent(intent)
