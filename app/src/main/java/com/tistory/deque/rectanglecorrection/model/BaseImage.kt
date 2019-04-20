@@ -24,7 +24,16 @@ data class BaseImage(var originalImageUri: Uri) {
     var convertedBitmapResizingRate: Double = 0.0
 
     //intArrayOf(canvasOnWidthPos, canvasOnHeightPos, canvasOnWidth, canvasOnHeight)
-    var convertedBitmapOnCanvasElements = IntArray(0)
+    var convertedBitmapOnCanvasElements = IntArray(4)
+
+    val canvasOnWidthStart: Int
+        get() = convertedBitmapOnCanvasElements[0]
+    val canvasOnHeightStart: Int
+        get() = convertedBitmapOnCanvasElements[1]
+    val canvasOnWidthEnd: Int
+        get() = convertedBitmapOnCanvasElements[0] + convertedBitmapOnCanvasElements[2]
+    val canvasOnHeightEnd: Int
+        get() = convertedBitmapOnCanvasElements[1] + convertedBitmapOnCanvasElements[3]
 
     private var bitmap: Bitmap? = null
     fun getBitmap(context: Context): Bitmap? {

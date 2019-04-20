@@ -1,5 +1,6 @@
 package com.tistory.deque.rectanglecorrection.model
 
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
@@ -69,6 +70,50 @@ class GuideLine {
     private fun Pair<Double, Double>.isClicked(clicked: Pair<Int, Int>): Boolean {
         return (clicked.first <= this.first + clickRadius && clicked.first >= this.first - clickRadius &&
                 clicked.second <= this.second + clickRadius && clicked.second >= this.second - clickRadius)
+    }
+
+    fun drawGuideLineToCanvas(canvas: Canvas) {
+        canvas.run {
+            // 사각형 먼저 그리기
+            drawLine(
+                guideLeftTopPair.first.toFloat(), guideLeftTopPair.second.toFloat(),
+                guideLeftBottomPair.first.toFloat(), guideLeftBottomPair.second.toFloat(),
+                guideRectPaint
+            )
+            drawLine(
+                guideLeftBottomPair.first.toFloat(), guideLeftBottomPair.second.toFloat(),
+                guideRightBottomPair.first.toFloat(), guideRightBottomPair.second.toFloat(),
+                guideRectPaint
+            )
+            drawLine(
+                guideRightBottomPair.first.toFloat(), guideRightBottomPair.second.toFloat(),
+                guideRightTopPair.first.toFloat(), guideRightTopPair.second.toFloat(),
+                guideRectPaint
+            )
+            drawLine(
+                guideRightTopPair.first.toFloat(), guideRightTopPair.second.toFloat(),
+                guideLeftTopPair.first.toFloat(), guideLeftTopPair.second.toFloat(),
+                guideRectPaint
+            )
+
+            //꼭지점 그리기
+            drawCircle(
+                guideLeftTopPair.first.toFloat(), guideLeftTopPair.second.toFloat(),
+                guideCircleRadius, guideCirclePaint
+            )
+            drawCircle(
+                guideLeftBottomPair.first.toFloat(), guideLeftBottomPair.second.toFloat(),
+                guideCircleRadius, guideCirclePaint
+            )
+            drawCircle(
+                guideRightTopPair.first.toFloat(), guideRightTopPair.second.toFloat(),
+                guideCircleRadius, guideCirclePaint
+            )
+            drawCircle(
+                guideRightBottomPair.first.toFloat(), guideRightBottomPair.second.toFloat(),
+                guideCircleRadius, guideCirclePaint
+            )
+        }
     }
 
 }

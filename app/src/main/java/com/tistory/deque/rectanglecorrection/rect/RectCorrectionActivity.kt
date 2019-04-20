@@ -110,6 +110,16 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
             Size(originalBaseImage?.width?.toDouble() ?: return, originalBaseImage?.height?.toDouble() ?: return)
         )
 
+        val outputBitmap: Bitmap = Bitmap.createBitmap(
+            originalBaseImage?.width ?: return,
+            originalBaseImage?.height ?: return,
+            Bitmap.Config.ARGB_8888
+        )
+        Utils.matToBitmap(outputMat, outputBitmap)
+
+        rect_canvas_custom_view?.convertedBitmap = outputBitmap
+        rect_canvas_custom_view?.convertSuccess = true
+        rect_canvas_custom_view?.invalidate()
     }
 
     private fun getImageFromIntent(intent: Intent?) {

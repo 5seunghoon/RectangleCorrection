@@ -66,6 +66,11 @@ class RectCanvasView : View {
         val x = event.x.toDouble()
         val y = event.y.toDouble()
 
+        baseImage?.let {
+            if(x < it.canvasOnWidthStart || x > it.canvasOnWidthEnd ||
+                    y < it.canvasOnHeightStart || y > it.canvasOnHeightEnd) return
+        }
+
         val newPair = Pair(x, y)
 
         when (selectedGuidePoint) {
@@ -112,51 +117,6 @@ class RectCanvasView : View {
     }
 
     private fun drawGuideLine(canvas: Canvas) {
-        guideLine.let {
-
-            // 이하는 가이드라인을 그리는 코드
-
-            canvas.run {
-                // 사각형 먼저 그리기
-                drawLine(
-                    it.guideLeftTopPair.first.toFloat(), it.guideLeftTopPair.second.toFloat(),
-                    it.guideLeftBottomPair.first.toFloat(), it.guideLeftBottomPair.second.toFloat(),
-                    it.guideRectPaint
-                )
-                drawLine(
-                    it.guideLeftBottomPair.first.toFloat(), it.guideLeftBottomPair.second.toFloat(),
-                    it.guideRightBottomPair.first.toFloat(), it.guideRightBottomPair.second.toFloat(),
-                    it.guideRectPaint
-                )
-                drawLine(
-                    it.guideRightBottomPair.first.toFloat(), it.guideRightBottomPair.second.toFloat(),
-                    it.guideRightTopPair.first.toFloat(), it.guideRightTopPair.second.toFloat(),
-                    it.guideRectPaint
-                )
-                drawLine(
-                    it.guideRightTopPair.first.toFloat(), it.guideRightTopPair.second.toFloat(),
-                    it.guideLeftTopPair.first.toFloat(), it.guideLeftTopPair.second.toFloat(),
-                    it.guideRectPaint
-                )
-
-                //꼭지점 그리기
-                drawCircle(
-                    it.guideLeftTopPair.first.toFloat(), it.guideLeftTopPair.second.toFloat(),
-                    it.guideCircleRadius, it.guideCirclePaint
-                )
-                drawCircle(
-                    it.guideLeftBottomPair.first.toFloat(), it.guideLeftBottomPair.second.toFloat(),
-                    it.guideCircleRadius, it.guideCirclePaint
-                )
-                drawCircle(
-                    it.guideRightTopPair.first.toFloat(), it.guideRightTopPair.second.toFloat(),
-                    it.guideCircleRadius, it.guideCirclePaint
-                )
-                drawCircle(
-                    it.guideRightBottomPair.first.toFloat(), it.guideRightBottomPair.second.toFloat(),
-                    it.guideCircleRadius, it.guideCirclePaint
-                )
-            }
-        }
+        guideLine.drawGuideLineToCanvas(canvas)
     }
 }
