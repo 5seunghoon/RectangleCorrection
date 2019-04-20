@@ -1,19 +1,15 @@
 package com.tistory.deque.rectanglecorrection.rect
 
-import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.widget.SeekBar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.snackbar.Snackbar
-import com.tedpark.tedpermission.rx2.TedRx2Permission
 import com.tistory.deque.rectanglecorrection.R
 import com.tistory.deque.rectanglecorrection.base.BaseActivity
 import com.tistory.deque.rectanglecorrection.model.BaseImage
 import com.tistory.deque.rectanglecorrection.model.ConvertedImage
 import com.tistory.deque.rectanglecorrection.util.EzLogger
-import com.tistory.deque.rectanglecorrection.util.RequestCodeConstant
 import com.tistory.deque.rectanglecorrection.util.getRealPath
 import kotlinx.android.synthetic.main.activity_rect_correction.*
 import org.opencv.android.Utils
@@ -27,7 +23,7 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
             System.loadLibrary("opencv_java4")
         }
 
-        var bitmapMaxSize:Int = 3000
+        var bitmapMaxSize: Int = 3000
     }
 
     override val layoutResourceId: Int get() = R.layout.activity_rect_correction
@@ -35,10 +31,13 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
         get() = ViewModelProviders.of(this).get(RectCorrectViewModel::class.java)
 
     private external fun loadImage(imageFileName: String, img: Long)
-    private external fun imageProcessing(inputImage: Long, outputImage: Long)
+    private external fun imageProcessing(inputImage: Long, outputImage: Long, lowThreshold: Int, highThreshold: Int)
 
-    private var originalBaseImage:BaseImage? = null
+    private var lowThreshold = 0
+    private var highThreshold = 255
 
+    private var originalImageMat: Mat = Mat()
+    private var originalBaseImage: BaseImage? = null
     override fun initStartView() {
         getImageFromIntent(intent)
     }
@@ -49,34 +48,36 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
     override fun initAfterBinding() {
     }
 
+    private fun changeImage(){
+        EzLogger.d("high : $highThreshold low : $lowThreshold ")
+        originalBaseImage?.let {
+            val imageOutput = Mat()
+
+            imageProcessing(originalImageMat.nativeObjAddr, imageOutput.nativeObjAddr, lowThreshold, highThreshold)
+            val outputBitmap = Bitmap.createBitmap(imageOutput.cols(), imageOutput.rows(), Bitmap.Config.ARGB_8888)
+            Utils.matToBitmap(imageOutput, outputBitmap)
+            rect_canvas_custom_view?.convertedImage = ConvertedImage(outputBitmap)
+            rect_canvas_custom_view?.invalidate()
+        }
+    }
+
     private fun getImageFromIntent(intent: Intent?) {
-        intent?.data?.let {imageUri ->
-            EzLogger.d("uri : $imageUri" )
+        intent?.data?.let { imageUri ->
+            EzLogger.d("uri : $imageUri")
             val imagePath = imageUri.getRealPath(this.contentResolver)
             EzLogger.d("path : $imagePath")
 
             originalBaseImage = BaseImage(imageUri) //uri로부터 model 생성
-            originalBaseImage?.let { baseImage ->
-                rect_canvas_custom_view?.baseImage = originalBaseImage
+            //originalImage의 mat 생성
+            Utils.bitmapToMat(originalBaseImage?.getBitmap(this) ?: return@let, originalImageMat)
+            rect_canvas_custom_view?.baseImage = originalBaseImage ?: return
 
-                //TODO : originalBaseImage를 이용해서 사각형(사다리꼴) OpenCV를 이용해서 감지. 그 후 해당 사다리꼴의 모서리를 list로 받기
-                //TODO : 연산 완료된 모서리 포지션들을 이용해서 캔버스에 사다리꼴 그리기
-                //TODO : (완료)버튼을 눌리면 해당 사다리꼴 모양으로 사진을 자르고 저장
+            //TODO : originalBaseImage를 이용해서 사각형(사다리꼴) OpenCV를 이용해서 감지. 그 후 해당 사다리꼴의 모서리를 list로 받기
+            //TODO : 연산 완료된 모서리 포지션들을 이용해서 캔버스에 사다리꼴 그리기
+            //TODO : (완료)버튼을 눌리면 해당 사다리꼴 모양으로 사진을 자르고 저장
 
-                val imageInput = Mat()
-                val imageOutput = Mat()
-                // originalBaseImage를 Mat로 변환
-                Utils.bitmapToMat(baseImage.getBitmap(this) ?: return, imageInput)
-
-                imagePath?.let {
-                    //loadImage(it, imageInput.nativeObjAddr)
-                    imageProcessing(imageInput.nativeObjAddr, imageOutput.nativeObjAddr)
-                    val outputBitmap = Bitmap.createBitmap(imageOutput.cols(), imageOutput.rows(), Bitmap.Config.ARGB_8888)
-                    Utils.matToBitmap(imageOutput, outputBitmap)
-                    rect_canvas_custom_view?.convertedImage = ConvertedImage(outputBitmap)
-                    rect_canvas_custom_view?.invalidate()
-                }
-            }
+            //changeImage()
+            rect_canvas_custom_view?.invalidate()
         }
 
         super.onNewIntent(intent)

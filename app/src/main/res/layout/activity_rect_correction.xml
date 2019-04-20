@@ -9,9 +9,10 @@
 		android:background="@color/canvasBackgroundColor"
 		tools:context=".rect.RectCorrectionActivity">
 
-	<com.tistory.deque.rectanglecorrection.customview.RectCanvasView android:layout_width="match_parent"
-	                                                                 android:layout_height="match_parent"
-	                                                                 android:id="@+id/rect_canvas_custom_view"/>
+
+		<com.tistory.deque.rectanglecorrection.customview.RectCanvasView android:layout_width="match_parent"
+		                                                                 android:layout_height="match_parent"
+		                                                                 android:id="@+id/rect_canvas_custom_view"/>
 
 
 </LinearLayout>

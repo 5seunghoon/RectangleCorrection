@@ -34,11 +34,35 @@ JNIEXPORT void JNICALL
 Java_com_tistory_deque_rectanglecorrection_rect_RectCorrectionActivity_imageProcessing(JNIEnv *env,
                                                                                    jobject instance,
                                                                                    jlong inputImageAddr,
-                                                                                   jlong outputImageAddr) {
+                                                                                   jlong outputImageAddr,
+                                                                                   jint lowThreshold,
+                                                                                   jint highThreshold) {
 
     Mat* imageInput = (Mat*) inputImageAddr;
-    Mat* outputInput = (Mat*) outputImageAddr;
+    Mat* imageOutput = (Mat*) outputImageAddr;
 
-    cvtColor(*imageInput, *outputInput, COLOR_RGBA2GRAY);
+    Mat grayScaleImage;
+    cvtColor(*imageInput, grayScaleImage, COLOR_RGBA2GRAY);
+    medianBlur(grayScaleImage, grayScaleImage, 9);
+
+    Mat edgeImage;
+    //threshold(grayScaleImage, edgeImage, lowThreshold, 255, THRESH_BINARY_INV | THRESH_OTSU);
+    Canny(grayScaleImage, edgeImage, lowThreshold, highThreshold);
+    //threshold(edgeImage, edgeImage, 0, 255,  THRESH_BINARY_INV);
+
+    *imageOutput = edgeImage;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+        Java_com_tistory_deque_rectanglecorrection_rect_RectCorrectionActivity_imagePerspectiveProcessing(JNIEnv *env,
+                                                                                                          jobject instance,
+                                                                                                          jlong inputImageAddr,
+                                                                                                          jlong outputImageAddr,
+                                                                                                          jint lowThreshold,
+                                                                                                          jint highThreshold) {
+
+    Point2f inputQuad[4];
+    Point2f outputQuad[4];
 
 }
