@@ -72,25 +72,35 @@ class RectCorrectionActivity : BaseActivity<RectCorrectViewModel>() {
     }
 
     private fun perspectiveConvertImage() {
+        // http://answers.opencv.org/question/102464/android-opencv-perspective-transformation-not-working-as-expected/
+
+        val rate = 1 / (originalBaseImage?.convertedBitmapResizingRate ?: return)
+        val bitmapPosX = originalBaseImage?.convertedBitmapOnCanvasElements?.get(0) ?: return
+        val bitmapPosY = originalBaseImage?.convertedBitmapOnCanvasElements?.get(1) ?: return
+        // 캔버스에 그려진 guideLine의 좌표를 실제 비트맵의 어느 좌표인지 계산
+        fun calcRealPoint(x:Double, y:Double): Point{
+            return Point((x - bitmapPosX.toDouble()) * rate, (y - bitmapPosY.toDouble()) * rate)
+        }
+
         val guideLine = rect_canvas_custom_view?.guideLine ?: return
 
         val srcPoints = ArrayList<Point>()
-        originalBaseImage?.let {
+        guideLine.let {
             srcPoints.run {
-                add(Point(0.0, 0.0))
-                add(Point(0.0, it.height.toDouble()))
-                add(Point(it.width.toDouble(), 0.0))
-                add(Point(it.width.toDouble(), it.height.toDouble()))
+                add(calcRealPoint(it.guideLeftTopPair.first, it.guideLeftTopPair.second))
+                add(calcRealPoint(it.guideLeftBottomPair.first, it.guideLeftBottomPair.second))
+                add(calcRealPoint(it.guideRightTopPair.first, it.guideRightTopPair.second))
+                add(calcRealPoint(it.guideRightBottomPair.first, it.guideRightBottomPair.second))
             }
         }
 
         val dstPoints = ArrayList<Point>()
-        guideLine.let {
+        originalBaseImage?.let {
             dstPoints.run {
-                add(Point(it.guideLeftTopPair.first, it.guideLeftTopPair.second))
-                add(Point(it.guideLeftBottomPair.first, it.guideLeftBottomPair.second))
-                add(Point(it.guideRightTopPair.first, it.guideRightTopPair.second))
-                add(Point(it.guideRightBottomPair.first, it.guideRightBottomPair.second))
+                add(Point(0.0, 0.0))
+                add(Point(0.0, it.height.toDouble()))
+                add(Point(it.width.toDouble(), 0.0))
+                add(Point(it.width.toDouble(), it.height.toDouble()))
             }
         }
 

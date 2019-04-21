@@ -107,8 +107,8 @@ class RectCanvasView : View {
             it.convertedBitmapResizingRate = resizingElementsPair.second
             resizingElementsPair.first.let { element ->
                 val bitmapRect = Rect(element[0], element[1], element[0] + element[2], element[1] + element[3])
-                EzLogger.d("draw converted bitmap, rect : $bitmapRect")
-                EzLogger.d("base converted bitmap canvas on rate : ${resizingElementsPair.second}")
+                EzLogger.d("draw bitmap, rect : $bitmapRect")
+                EzLogger.d("base bitmap canvas on rate : ${resizingElementsPair.second}")
                 canvas.drawBitmap(it.getBitmap(this.context) ?: return, null, bitmapRect, null)
 
                 guideLine.initPointPair(it.convertedBitmapOnCanvasElements)
